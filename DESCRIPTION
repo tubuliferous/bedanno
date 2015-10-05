@@ -1,0 +1,21 @@
+Package: bedanno
+Type: Package
+Title: Annotates BED-like variant file.
+Version: 0.0.0.9000
+Date: 2015-10-02
+Author: Ben Weaver
+Maintainer: Ben Weaver <weaver@hudsonalpha.org>
+Description: More about what it does (maybe more than one line)
+URL: http://github.com/tubuliferous/bedanno
+BugReports: http://github.com/tubuliferous/bedanno/issues
+License: GPL-2
+LazyData: TRUE
+Imports:
+  data.table (>= 1.9.6),
+  ggplot2    (>= 1.0.1),
+  dplyr      (>= 0.4.3),
+  parallel   (>= 3.2.2),
+  readr      (>= 0.1.1),
+  stringr    (>= 1.0.0),
+  R.utils    (>= 2.1.0),
+  devtools   (>= 1.9.1.9000)
