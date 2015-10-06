@@ -176,3 +176,5 @@ annotate_variants_with_intermediates <- function(bed_dir_path, variant_path, cor
   anno_col_dir_path <- file.path(dirname(variant_path), paste(basename(variant_path), "annos", sep="."))
   horizontal_concat_annos(variant_path = variant_path, anno_col_dir_path = anno_col_dir_path)
 }
+
+
