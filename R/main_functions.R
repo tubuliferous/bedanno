@@ -141,7 +141,7 @@ write_variant_annotations <- function(bed_dir_path, variant_path, cores = 1){
   anno_dir_path <- file.path(dirname(variant_path), paste(basename(variant_path), "annos", sep="."))
   dir.create(anno_dir_path, showWarnings = FALSE)
   elapsed_get_variant_table <- system.time(variant_table <- get_variant_table(variant_path))
-  write.table(variant_table, paste(variant_path, ".annotated", sep=""), col.names = TRUE, quote = FALSE, row.names = FALSE)
+  write.table(variant_table, paste(variant_path, ".reordered", sep=""), col.names = TRUE, quote = FALSE, row.names = FALSE)
   print(paste("Variant table read in", elapsed_get_variant_table["elapsed"], "seconds."))
   bed_paths <- get_file_paths(bed_dir_path)
   elapsed_anno <- (system.time(parallel::mclapply(bed_paths, write_anno_col, variant_table, anno_dir_path, mc.cores = cores)))
@@ -159,6 +159,12 @@ horizontal_concat_annos <- function(variant_path, anno_col_dir_path){
   paths <- paste(anno_col_dir_path, anno_file_names, sep="/")
   paths <- paste(paths, collapse = " ")
   paths <- paste(variant_path, paths, collapse = " ")
+
+  print(paths)
+  print("----")
+  print(variant_path)
+  print("----")
+
   # Use UNIX paste command
   sys_command <- paste("paste ", paths, " > ", variant_path, ".annotated", sep="")
   print(sys_command)
@@ -175,7 +181,7 @@ horizontal_concat_annos <- function(variant_path, anno_col_dir_path){
 annotate_variants_with_intermediates <- function(bed_dir_path, variant_path, cores = 1){
   write_variant_annotations(bed_dir_path = bed_dir_path, variant_path = variant_path, cores = cores)
   anno_col_dir_path <- file.path(dirname(variant_path), paste(basename(variant_path), "annos", sep="."))
-  formatted_var_path <- paste(variant_path, "annotated", sep=".")
+  formatted_var_path <- paste(variant_path, ".reordered", sep="") #From 
   horizontal_concat_annos(variant_path = formatted_var_path, anno_col_dir_path = anno_col_dir_path)
 }
 
