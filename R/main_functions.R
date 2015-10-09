@@ -159,14 +159,9 @@ horizontal_concat_annos <- function(variant_path, anno_col_dir_path){
   paths <- paste(anno_col_dir_path, anno_file_names, sep="/")
   paths <- paste(paths, collapse = " ")
   paths <- paste(variant_path, paths, collapse = " ")
-
-  print(paths)
-  print("----")
-  print(variant_path)
-  print("----")
-
   # Use UNIX paste command
   sys_command <- paste("paste ", paths, " > ", variant_path, ".annotated", sep="")
+  print("Horizontal concatentation system command:")
   print(sys_command)
   system(sys_command)
 }
