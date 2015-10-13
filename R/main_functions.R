@@ -19,23 +19,24 @@ NULL
 #' @param sep A character.
 #' @return data.table
 gzfread <- function(path, sep, out_dir = NULL){
-  if(!stringr::str_detect(path, ".gz$")){
-    data.table::fread(path, sep = sep)
+  if(!stringr::str_detect(path, ".gz$")) {
+    gunzipped <- data.table::fread(path, sep = sep)
   }else{
     if(is.null(out_dir)){
       gunzipped_path <- stringr::str_replace(path, ".gz$", "")
+      if(file.exists(gunzipped_path)){
+        gunzipped <- data.table::fread(gunzipped_path, sep = sep)
+      }else{
+        gunzipped <- data.table::fread(R.utils::gunzip(path, remove = F), sep = sep)}
     }else{
-      file_name <- stringr::str_replace(basename(path, ".gz$", ""))
-      gunzipped_path <- paste(out_dir, "/", filename, sep="")
-    }
-
-    gunzipped_path <- stringr::str_replace(path, ".gz$", "")
-    if(file.exists(gunzipped_path)){
-      data.table::fread(gunzipped_path, sep = "")
-    }else{
-      gunzipped <- data.table::fread(R.utils::gunzip(path, remove=F), sep = sep)
+      gunzipped_path <- stringr::str_replace(path, ".gz$", "")
+      if(file.exists(gunzipped_path)){
+        gunzipped <- data.table::fread(gunzipped_path, sep = sep)
+      }else{
+        gunzipped <- data.table::fread(R.utils::gunzip(path, remove = FALSE, overwrite = TRUE, destname = paste(out_dir, "/", basename(gunzipped_path), sep = "")), sep = sep)}
     }
   }
+  return(gunzipped)
 }
 
 #' Import BED file.
@@ -44,10 +45,10 @@ gzfread <- function(path, sep, out_dir = NULL){
 #' @param bed_path A character.
 #' @return data.table
 get_bed <- function(bed_path){
-  paste("Reading ", basename(bed_path), sep="") %>% print
-  this_bed <- read_delim(bed_path, delim="\t", col_names=FALSE)
-  # Alternative: this_bed <- gzfread(bed_path, sep="\t")
-  this_bed <- data.table::data.table(this_bed)
+  paste("Reading ", basename(bed_path), sep="") %>% message
+  this_bed <- gzfread(bed_path, sep="\t")
+  # Alternative: 
+  # this_bed <- read_delim(bed_path, delim="\t", col_names=FALSE)
   data.table::setnames(this_bed, names(this_bed)[1:3],
                        c("CHROM", "START", "STOP")) %>%
     select(CHROM, START, STOP) %>%
@@ -108,10 +109,10 @@ get_anno_col <- function(bed_file_path, variant_table){
 #' @export
 annotate_variants <- function(bed_dir_path, variant_path, cores=1){
   elapsed_get_variant_table <- system.time(variant_table <- get_variant_table(variant_path))
-  print(paste("Variant table read in", elapsed_get_variant_table["elapsed"], "seconds."))
+  message(paste("Variant table read in", elapsed_get_variant_table["elapsed"], "seconds."))
   bed_paths <- get_file_paths(bed_dir_path)
   elapsed_anno_list <- (system.time(anno_list <- parallel::mclapply(bed_paths, get_anno_col, variant_table, mc.cores=cores)))
-  print(paste("Annotation matrix generated in", elapsed_anno_list["elapsed"], "seconds"))
+  message(paste("Annotation matrix generated in", elapsed_anno_list["elapsed"], "seconds"))
   names(anno_list) <- basename(bed_paths)
   return(data.frame(variant_table, anno_list))
 }
@@ -149,10 +150,13 @@ write_variant_annotations <- function(bed_dir_path, variant_path, cores = 1){
   dir.create(anno_dir_path, showWarnings = FALSE)
   elapsed_get_variant_table <- system.time(variant_table <- get_variant_table(variant_path))
   write.table(variant_table, paste(variant_path, ".reordered", sep=""), col.names = TRUE, quote = FALSE, row.names = FALSE)
-  print(paste("Variant table read in", elapsed_get_variant_table["elapsed"], "seconds."))
+  message(paste("Variant table read in", elapsed_get_variant_table["elapsed"], "seconds."))
   bed_paths <- get_file_paths(bed_dir_path)
   elapsed_anno <- (system.time(parallel::mclapply(bed_paths, write_anno_col, variant_table, anno_dir_path, mc.cores = cores)))
-  print(paste("Annotation files written in", elapsed_anno["elapsed"], "seconds"))
+  message(paste("Annotation files written in", elapsed_anno["elapsed"], "seconds"))
+  message("Cleaning up intermediate gunzipped BED files.")
+  new_bed_paths <- get_file_paths(bed_dir_path)
+  file.remove(new_bed_paths[!(new_bed_paths %in% bed_paths)])
 }
 
 #' Horizontally concatenate intermediate annotation columns.
@@ -168,8 +172,9 @@ horizontal_concat_annos <- function(variant_path, anno_col_dir_path){
   paths <- paste(variant_path, paths, collapse = " ")
   # Use UNIX paste command
   sys_command <- paste("paste ", paths, " > ", variant_path, ".annotated", sep="")
-  print("Horizontal concatentation system command:")
-  print(sys_command)
+  # message("Horizontal concatentation system command:")
+  message(sys_command)
+  message(paste("Adding", length(unlist(str_split(paths, " "))) - 1, "annotation columns to variant file."))
   system(sys_command)
 }
 
@@ -183,13 +188,6 @@ horizontal_concat_annos <- function(variant_path, anno_col_dir_path){
 annotate_variants_with_intermediates <- function(bed_dir_path, variant_path, cores = 1){
   write_variant_annotations(bed_dir_path = bed_dir_path, variant_path = variant_path, cores = cores)
   anno_col_dir_path <- file.path(dirname(variant_path), paste(basename(variant_path), "annos", sep="."))
-  formatted_var_path <- paste(variant_path, ".reordered", sep="") #From
-
-  dir.create(paste(dirname(bed_dir_path), "/", "unzipped_bed_dir", sep = ""), showWarnings = FALSE)
-  bed_dir_path 
-
+  formatted_var_path <- paste(variant_path, ".reordered", sep="")
   horizontal_concat_annos(variant_path = formatted_var_path, anno_col_dir_path = anno_col_dir_path)
 }
-
-
-
