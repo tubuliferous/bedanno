@@ -191,3 +191,5 @@ annotate_variants_with_intermediates <- function(bed_dir_path, variant_path, cor
   formatted_var_path <- paste(variant_path, ".reordered", sep="")
   horizontal_concat_annos(variant_path = formatted_var_path, anno_col_dir_path = anno_col_dir_path)
 }
+
+
