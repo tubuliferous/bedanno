@@ -18,13 +18,20 @@ NULL
 #' @param path A character.
 #' @param sep A character.
 #' @return data.table
-gzfread <- function(path, sep){
+gzfread <- function(path, sep, out_dir = NULL){
   if(!stringr::str_detect(path, ".gz$")){
     data.table::fread(path, sep = sep)
   }else{
+    if(is.null(out_dir)){
+      gunzipped_path <- stringr::str_replace(path, ".gz$", "")
+    }else{
+      file_name <- stringr::str_replace(basename(path, ".gz$", ""))
+      gunzipped_path <- paste(out_dir, "/", filename, sep="")
+    }
+
     gunzipped_path <- stringr::str_replace(path, ".gz$", "")
     if(file.exists(gunzipped_path)){
-      data.table::fread(gunzipped_path, sep = sep)
+      data.table::fread(gunzipped_path, sep = "")
     }else{
       gunzipped <- data.table::fread(R.utils::gunzip(path, remove=F), sep = sep)
     }
@@ -38,8 +45,8 @@ gzfread <- function(path, sep){
 #' @return data.table
 get_bed <- function(bed_path){
   paste("Reading ", basename(bed_path), sep="") %>% print
-  ## Alternative: this_bed <- read_delim(bed_path, delim="\t", col_names=FALSE)
-  this_bed <- gzfread(bed_path, sep="\t")
+  this_bed <- read_delim(bed_path, delim="\t", col_names=FALSE)
+  # Alternative: this_bed <- gzfread(bed_path, sep="\t")
   this_bed <- data.table::data.table(this_bed)
   data.table::setnames(this_bed, names(this_bed)[1:3],
                        c("CHROM", "START", "STOP")) %>%
@@ -176,7 +183,11 @@ horizontal_concat_annos <- function(variant_path, anno_col_dir_path){
 annotate_variants_with_intermediates <- function(bed_dir_path, variant_path, cores = 1){
   write_variant_annotations(bed_dir_path = bed_dir_path, variant_path = variant_path, cores = cores)
   anno_col_dir_path <- file.path(dirname(variant_path), paste(basename(variant_path), "annos", sep="."))
-  formatted_var_path <- paste(variant_path, ".reordered", sep="") #From 
+  formatted_var_path <- paste(variant_path, ".reordered", sep="") #From
+
+  dir.create(paste(dirname(bed_dir_path), "/", "unzipped_bed_dir", sep = ""), showWarnings = FALSE)
+  bed_dir_path 
+
   horizontal_concat_annos(variant_path = formatted_var_path, anno_col_dir_path = anno_col_dir_path)
 }
 
