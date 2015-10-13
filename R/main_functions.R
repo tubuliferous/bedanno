@@ -47,7 +47,7 @@ gzfread <- function(path, sep, out_dir = NULL){
 get_bed <- function(bed_path){
   paste("Reading ", basename(bed_path), sep="") %>% message
   this_bed <- gzfread(bed_path, sep="\t")
-  # Alternative: 
+  # Alternative:
   # this_bed <- read_delim(bed_path, delim="\t", col_names=FALSE)
   data.table::setnames(this_bed, names(this_bed)[1:3],
                        c("CHROM", "START", "STOP")) %>%
@@ -174,7 +174,7 @@ horizontal_concat_annos <- function(variant_path, anno_col_dir_path){
   sys_command <- paste("paste ", paths, " > ", variant_path, ".annotated", sep="")
   # message("Horizontal concatentation system command:")
   message(sys_command)
-  message(paste("Adding", length(unlist(str_split(paths, " "))) - 1, "annotation columns to variant file."))
+  message(paste("Adding", length(unlist(stringr::str_split(paths, " "))) - 1, "annotation columns to variant file."))
   system(sys_command)
 }
 
