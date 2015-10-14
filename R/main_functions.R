@@ -10,7 +10,7 @@ NULL
   packageStartupMessage("Welcome to bedanno! Both variants and annotations files should follow the BED schema for the first three columns.")
 }
 
-# Utility Functions ---------------------------------------------
+# Utility Functions -------------------------------------------------
 
 #' Read gzipped file into data.table.
 #'
@@ -81,7 +81,7 @@ get_file_paths <- function(dir_path){
   return(file_list)
 }
 
-# Main Functions -----------------------------------------------
+# Main Functions ----------------------------------------------------
 
 #' Generate binary annotation column.
 #'
@@ -89,7 +89,6 @@ get_file_paths <- function(dir_path){
 #' @param bed_file_path A character.
 #' @param variant_table A data.table.
 #' @return Annotation column.
-#' @export
 get_anno_col <- function(bed_file_path, variant_table){
   bed      <- get_bed(bed_file_path)
   data.table::setkey(bed, CHROM, START, STOP)
@@ -105,8 +104,8 @@ get_anno_col <- function(bed_file_path, variant_table){
 #' @family annotation functions with NO intermediate file output
 #' @param bed_dir_path A character.
 #' @param variant_path A data.table.
+#' @param cores A numeric.
 #' @return Annotated data.frame.
-#' @export
 annotate_variants <- function(bed_dir_path, variant_path, cores=1){
   elapsed_get_variant_table <- system.time(variant_table <- get_variant_table(variant_path))
   message(paste("Variant table read in", elapsed_get_variant_table["elapsed"], "seconds."))
@@ -117,7 +116,7 @@ annotate_variants <- function(bed_dir_path, variant_path, cores=1){
   return(data.frame(variant_table, anno_list))
 }
 
-# -------------------------------------------
+# -------------------------------------------------------------------
 
 #' Write intermediate annotation column.
 #'
@@ -126,7 +125,6 @@ annotate_variants <- function(bed_dir_path, variant_path, cores=1){
 #' @param variant_table A data.table.
 #' @param anno_path A character.
 #' @return NULL.
-#' @export
 write_anno_col <- function(bed_file_path, variant_table, anno_path){
   bed      <- get_bed(bed_file_path)
   data.table::setkey(bed, CHROM, START, STOP)
@@ -143,7 +141,8 @@ write_anno_col <- function(bed_file_path, variant_table, anno_path){
 #'
 #' @family annotation functions WITH intermediate file output
 #' @param bed_dir_path A character.
-#' @param variant_path A character.
+#' @param variant_path A data.table.
+#' @param cores A numeric.
 #' @return NULL.
 write_variant_annotations <- function(bed_dir_path, variant_path, cores = 1){
   anno_dir_path <- file.path(dirname(variant_path), paste(basename(variant_path), "annos", sep="."))
@@ -182,9 +181,9 @@ horizontal_concat_annos <- function(variant_path, anno_col_dir_path){
 #'
 #' @family annotation functions WITH intermediate file output
 #' @param bed_dir_path A character.
-#' @param variant_path A character.
+#' @param variant_path A data.table.
+#' @param cores A numeric.
 #' @return NULL.
-#' @export
 annotate_variants_with_intermediates <- function(bed_dir_path, variant_path, cores = 1){
   write_variant_annotations(bed_dir_path = bed_dir_path, variant_path = variant_path, cores = cores)
   anno_col_dir_path <- file.path(dirname(variant_path), paste(basename(variant_path), "annos", sep="."))
@@ -192,4 +191,30 @@ annotate_variants_with_intermediates <- function(bed_dir_path, variant_path, cor
   horizontal_concat_annos(variant_path = formatted_var_path, anno_col_dir_path = anno_col_dir_path)
 }
 
+# Top-level functions -----------------------------------------------
+#' Annotate variant file from BED files 
+#'
+#' @family Annotate variant file with returned data.table or annotated files. 
+#' @param bed_dir_path A character.
+#' @param variant_path A data.table.
+#' @param cores A numeric.
+#' @param write_files A logical.
+#' @return NULL for write_files == FALSE; data.table for write_files == TRUE
+#' @export
+anno_vars <- function(bed_dir_path, variant_path, cores = 1, write_files = TRUE){
+  if(write_files == TRUE){
+    annotate_variants_with_intermediates(bed_dir_path = bed_dir_path, variant_path = variant_path, cores = cores)
+  }else{
+    annotate_variants(bed_dir_path = bed_dir_path, variant_path = variant_path, cores = cores)
+  }
+}
 
+
+## Functions for annotating from vector of file paths ----------------
+##' Write intermediate cols and horizontally concatenate output.
+##'
+##' @family annotation functions WITH intermediate file output
+##' @param bed_dir_path A character.
+##' @param variant_path A character.
+##' @return NULL.
+##' @export
