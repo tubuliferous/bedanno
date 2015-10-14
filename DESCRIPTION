@@ -18,4 +18,4 @@ Imports:
   readr      (>= 0.1.1),
   stringr    (>= 1.0.0),
   R.utils    (>= 2.1.0),
-  devtools   (>= 1.9.1.9000)
+  devtools   (>= 1.9.1)

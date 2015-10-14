@@ -4,7 +4,7 @@
 \alias{gzfread}
 \title{Read gzipped file into data.table.}
 \usage{
-gzfread(path, sep)
+gzfread(path, sep, out_dir = NULL)
 }
 \arguments{
 \item{path}{A character.}

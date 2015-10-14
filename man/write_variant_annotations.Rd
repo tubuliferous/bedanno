@@ -9,7 +9,9 @@ write_variant_annotations(bed_dir_path, variant_path, cores = 1)
 \arguments{
 \item{bed_dir_path}{A character.}
 
-\item{variant_path}{A character.}
+\item{variant_path}{A data.table.}
+
+\item{cores}{A numeric.}
 }
 \value{
 NULL.

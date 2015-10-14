@@ -10,6 +10,8 @@ annotate_variants(bed_dir_path, variant_path, cores = 1)
 \item{bed_dir_path}{A character.}
 
 \item{variant_path}{A data.table.}
+
+\item{cores}{A numeric.}
 }
 \value{
 Annotated data.frame.
