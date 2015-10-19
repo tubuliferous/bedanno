@@ -148,7 +148,7 @@ write_variant_annotations <- function(bed_dir_path, variant_path, cores = 1){
   anno_dir_path <- file.path(dirname(variant_path), paste(basename(variant_path), "annos", sep="."))
   dir.create(anno_dir_path, showWarnings = FALSE)
   elapsed_get_variant_table <- system.time(variant_table <- get_variant_table(variant_path))
-  write.table(variant_table, paste(variant_path, ".reordered", sep=""), col.names = TRUE, quote = FALSE, row.names = FALSE)
+  write.table(variant_table, paste(variant_path, ".reordered", sep=""), col.names = TRUE, quote = FALSE, row.names = FALSE, sep = "\t")
   message(paste("Variant table read in", elapsed_get_variant_table["elapsed"], "seconds."))
   bed_paths <- get_file_paths(bed_dir_path)
   elapsed_anno <- (system.time(parallel::mclapply(bed_paths, write_anno_col, variant_table, anno_dir_path, mc.cores = cores)))
