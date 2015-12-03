@@ -35,6 +35,7 @@ gzfread <- function(path, sep, out_dir = NULL){
       }else{
         gunzipped <- data.table::fread(R.utils::gunzip(path, remove = FALSE, overwrite = TRUE, destname = paste(out_dir, "/", basename(gunzipped_path), sep = "")), sep = sep)}
     }
+    file.remove(gunzipped_path) 
   }
   return(gunzipped)
 }
