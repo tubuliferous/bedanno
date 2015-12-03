@@ -107,13 +107,17 @@ get_anno_col <- function(bed_file_path, variant_table){
 #' @param cores A numeric.
 #' @return Annotated data.frame.
 annotate_variants <- function(bed_dir_path, variant_path, cores=1){
+  doMC::registerDoMC(cores=cores)
   elapsed_get_variant_table <- system.time(variant_table <- get_variant_table(variant_path))
   message(paste("Variant table read in", elapsed_get_variant_table["elapsed"], "seconds."))
   bed_paths <- get_file_paths(bed_dir_path)
   # elapsed_anno_list <- (system.time(anno_list <- parallel::mclapply(bed_paths, get_anno_col, variant_table, mc.cores=cores)))
   elapsed_anno_list <- (system.time(anno_list <- lapply(bed_paths, get_anno_col, variant_table)))
+  
+  elapsed_anno_list <- system.time(anno_list <- alply(bed_paths, 1, get_anno_col, parallel = TRUE))
   message(paste("Annotation matrix generated in", elapsed_anno_list["elapsed"], "seconds"))
   names(anno_list) <- basename(bed_paths)
+  doMC::registerDoMC(cores=1)
   return(data.frame(variant_table, anno_list))
 }
 
@@ -209,6 +213,7 @@ anno_vars <- function(bed_dir_path, variant_path, cores = 1, write_files = TRUE)
     annotate_variants(bed_dir_path = bed_dir_path, variant_path = variant_path, cores = cores)
   }
 }
+
 
 
 ## Functions for annotating from vector of file paths ----------------
