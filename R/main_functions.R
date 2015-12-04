@@ -175,8 +175,8 @@ horizontal_concat_annos <- function(variant_path, anno_col_dir_path){
   paths <- paste(anno_col_dir_path, anno_file_names, sep="/")
   paths <- paste(paths, collapse = " ")
   paths <- paste(variant_path, paths, collapse = " ")
-  # Use UNIX paste command
-  sys_command <- paste("paste ", paths, " > ", variant_path, ".annotated", sep="")
+  # Use UNIX paste command; set soft limit to open number of files to maximum (10240)
+  sys_command <- paste("ulimit -Sn 10240; paste ", paths, " > ", variant_path, ".annotated", sep="")
   # message("Horizontal concatentation system command:")
   message(sys_command)
   message(paste("Adding", length(unlist(stringr::str_split(paths, " "))) - 1, "annotation columns to variant file."))
@@ -214,7 +214,6 @@ anno_vars <- function(bed_dir_path, variant_path, cores = 1, write_files = TRUE)
     annotate_variants(bed_dir_path = bed_dir_path, variant_path = variant_path, cores = cores)
   }
 }
-
 
 
 ## Functions for annotating from vector of file paths ----------------
