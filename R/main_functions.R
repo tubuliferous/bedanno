@@ -15,29 +15,20 @@ NULL
 #' Read gzipped file into data.table.
 #'
 #' @family utility functions
-#' @param path A character.
-#' @param sep A character.
+#' @title gzfread
+#' @description Import text from gzipped or gunzipped file to data.table
+#' @aliases gzfread
+#' @author http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
+#' @export gzfread
+#' @param path a character
 #' @return data.table
-gzfread <- function(path, sep, out_dir = NULL){
+gzfread <- function(path, sep = "\t", out_dir = NULL){
   if(!stringr::str_detect(path, ".gz$")) {
-    gunzipped <- data.table::fread(path, sep = sep)
-  }else{
-    if(is.null(out_dir)){
-      gunzipped_path <- stringr::str_replace(path, ".gz$", "")
-      if(file.exists(gunzipped_path)){
-        gunzipped <- data.table::fread(gunzipped_path, sep = sep)
-      }else{
-        gunzipped <- data.table::fread(R.utils::gunzip(path, remove = F), sep = sep)}
-    }else{
-      gunzipped_path <- stringr::str_replace(path, ".gz$", "")
-      if(file.exists(gunzipped_path)){
-        gunzipped <- data.table::fread(gunzipped_path, sep = sep)
-      }else{
-        gunzipped <- data.table::fread(R.utils::gunzip(path, remove = FALSE, overwrite = TRUE, destname = paste(out_dir, "/", basename(gunzipped_path), sep = "")), sep = sep)}
-    }
-    file.remove(gunzipped_path) 
+    return(data.table::fread(path, sep = sep))
   }
-  return(gunzipped)
+  else{
+    return(data.table::fread(paste0("zcat < ", "\"", path, "\"")))
+  }
 }
 
 #' Import BED file.
@@ -112,9 +103,8 @@ annotate_variants <- function(bed_dir_path, variant_path, cores=1){
   elapsed_get_variant_table <- system.time(variant_table <- get_variant_table(variant_path))
   message(paste("Variant table read in", elapsed_get_variant_table["elapsed"], "seconds."))
   bed_paths <- get_file_paths(bed_dir_path)
+  # Old Method:
   # elapsed_anno_list <- (system.time(anno_list <- parallel::mclapply(bed_paths, get_anno_col, variant_table, mc.cores=cores)))
-  # elapsed_anno_list <- (system.time(anno_list <- lapply(bed_paths, get_anno_col, variant_table)))
-  
   elapsed_anno_list <- system.time(anno_list <- plyr::alply(bed_paths, 1, get_anno_col, variant_table, .parallel = TRUE))
   message(paste("Annotation matrix generated in", elapsed_anno_list["elapsed"], "seconds"))
   names(anno_list) <- basename(bed_paths)
@@ -198,9 +188,9 @@ annotate_variants_with_intermediates <- function(bed_dir_path, variant_path, cor
 }
 
 # Top-level functions -----------------------------------------------
-#' Annotate variant file from BED files 
+#' Annotate variant file from BED files
 #'
-#' @family Annotate variant file with returned data.table or annotated files. 
+#' @family Annotate variant file with returned data.table or annotated files.
 #' @param bed_dir_path A character.
 #' @param variant_path A data.table.
 #' @param cores A numeric.

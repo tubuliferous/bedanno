@@ -2,20 +2,24 @@
 % Please edit documentation in R/main_functions.R
 \name{gzfread}
 \alias{gzfread}
-\title{Read gzipped file into data.table.}
+\title{gzfread}
 \usage{
-gzfread(path, sep, out_dir = NULL)
+gzfread(path, sep = "\\t", out_dir = NULL)
 }
 \arguments{
-\item{path}{A character.}
-
-\item{sep}{A character.}
+\item{path}{a character}
 }
 \value{
 data.table
 }
 \description{
+Import text from gzipped or gunzipped file to data.table
+}
+\details{
 Read gzipped file into data.table.
+}
+\author{
+http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
 }
 \seealso{
 Other utility functions: \code{\link{get_bed}},
