@@ -19,7 +19,6 @@ NULL
 #' @description Import text from gzipped or gunzipped file to data.table
 #' @aliases gzfread
 #' @author http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
-#' @export gzfread
 #' @param path a character
 #' @return data.table
 gzfread <- function(path, sep = "\t", out_dir = NULL){
