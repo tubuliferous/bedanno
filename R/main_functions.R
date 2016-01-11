@@ -108,7 +108,9 @@ annotate_variants <- function(bed_dir_path, variant_path, cores=1){
   message(paste("Annotation matrix generated in", elapsed_anno_list["elapsed"], "seconds"))
   names(anno_list) <- basename(bed_paths)
   doMC::registerDoMC(cores=1)
-  return(data.frame(variant_table, anno_list))
+  anno_dt <- data.table(variant_table, anno_list)
+  write.table(anno_dt, file = paste0(variant_path, ".anno", sep=""), col.names = TRUE, quote = FALSE, row.names = FALSE)
+  return(anno_dt)
 }
 
 # -------------------------------------------------------------------
