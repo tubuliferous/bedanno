@@ -5,6 +5,8 @@
 NULL
 #' @import data.table
 NULL
+#' @import doMC
+NULL
 
 .onAttach <- function(libname, pkgname) {
   packageStartupMessage("Welcome to bedanno! Both variants and annotations files should follow the BED schema for the first three columns.")
