@@ -70,7 +70,7 @@ get_variant_table <- function(variant_path){
 #' @param dir_path A character.
 #' @return character
 get_file_paths <- function(dir_path){
-  file_list <- paste(dir_path, list.files(dir_path), sep="")
+  file_list <- paste(dir_path, "/", list.files(dir_path), sep="")
   return(file_list)
 }
 
