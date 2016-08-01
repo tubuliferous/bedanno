@@ -237,3 +237,4 @@ anno_vars <- function(bed_dir_path, variant_path, cores = 1, write_files = TRUE)
 ##' @param variant_path A character.
 ##' @return NULL.
 ##' @export
+
