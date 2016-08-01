@@ -84,7 +84,7 @@ get_file_paths <- function(dir_path){
 #' @return Annotation column.
 get_anno_col <- function(bed_file_path, variant_table){
   bed <- get_bed(bed_file_path)
-  try_output <- try({
+  try_output <- try({
     data.table::setkey(bed, CHROM, START, STOP)
     overlap_table <- foverlaps(variant_table, bed, type="within")
     distinct_overlap_table <- unique(overlap_table, by=c("CHROM", "i.START", "i.STOP"))
@@ -145,7 +145,7 @@ write_anno_col <- function(bed_file_path, variant_table, anno_path){
     anno_column <- data.frame(anno_column)
     names(anno_column) <- basename(bed_file_path)
     }, silent = TRUE)
-  
+
   # If there is something wrong with the BED file print a column of NAs
   if(class(try_output) == "try-error"){
     print(paste0("BED annotation file ", bed_file_path, " is malformed. Inserting NAs."))
