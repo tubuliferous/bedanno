@@ -83,13 +83,24 @@ get_file_paths <- function(dir_path){
 #' @param variant_table A data.table.
 #' @return Annotation column.
 get_anno_col <- function(bed_file_path, variant_table){
-  bed      <- get_bed(bed_file_path)
-  data.table::setkey(bed, CHROM, START, STOP)
-  overlap_table <- foverlaps(variant_table, bed, type="within")
-  distinct_overlap_table <- unique(overlap_table, by=c("CHROM", "i.START", "i.STOP"))
-  anno_column <- rep.int(0, nrow(distinct_overlap_table)) # Use rep.int instead of rep for speed
-  anno_column[!is.na(distinct_overlap_table$START)] <- 1
-  anno_column %>% return
+  bed <- get_bed(bed_file_path)
+  try_output <- 
+    try({
+      data.table::setkey(bed, CHROM, START, STOP)
+      overlap_table <- foverlaps(variant_table, bed, type="within")
+      distinct_overlap_table <- unique(overlap_table, by=c("CHROM", "i.START", "i.STOP"))
+      anno_column <- rep.int(0, nrow(distinct_overlap_table)) # Use rep.int instead of rep for speed
+      anno_column[!is.na(distinct_overlap_table$START)] <- 1
+      anno_column
+    }, silent = TRUE)
+
+  # If there is something wrong with the BED file return a column of NAs
+  if(class(try_output) == "try-error"){
+    print(paste0("BED annotation file ", bed_file_path, " is malformed. Inserting NAs."))
+    return(rep(NA, nrow(unique(variant_table, by = c("CHROM", "START", "STOP")))))
+  }else{
+    return(anno_column)
+  }
 }
 
 #' Annotate a data.table with binary annotations.
@@ -125,15 +136,26 @@ annotate_variants <- function(bed_dir_path, variant_path, cores=1){
 #' @param anno_path A character.
 #' @return NULL.
 write_anno_col <- function(bed_file_path, variant_table, anno_path){
-  bed      <- get_bed(bed_file_path)
-  data.table::setkey(bed, CHROM, START, STOP)
-  overlap_table <- foverlaps(variant_table, bed, type="within")
-  distinct_overlap_table <- unique(overlap_table, by=c("CHROM", "i.START", "i.STOP"))
-  anno_column <- rep.int(0, nrow(distinct_overlap_table)) # Use rep.int instead of rep for speed
-  anno_column[!is.na(distinct_overlap_table$START)] <- 1
-  anno_column <- data.frame(anno_column)
-  names(anno_column) <- basename(bed_file_path)
-  write.table(anno_column, file = paste(anno_path, "/", basename(bed_file_path), ".anno", sep=""), col.names = TRUE, quote = FALSE, row.names = FALSE)
+  bed <- get_bed(bed_file_path)
+  try_output <-
+    try({
+      data.table::setkey(bed, CHROM, START, STOP)
+      overlap_table <- foverlaps(variant_table, bed, type="within")
+      distinct_overlap_table <- unique(overlap_table, by=c("CHROM", "i.START", "i.STOP"))
+      anno_column <- rep.int(0, nrow(distinct_overlap_table)) # Use rep.int instead of rep for speed
+      anno_column[!is.na(distinct_overlap_table$START)] <- 1
+      anno_column <- data.frame(anno_column)
+      names(anno_column) <- basename(bed_file_path)}, silent = TRUE)
+  
+  # If there is something wrong with the BED file print a column of NAs
+  if(class(try_output) == "try-error"){
+    print(paste0("BED annotation file ", bed_file_path, " is malformed. Inserting NAs."))
+    na_column <- rep(NA, nrow(unique(variant_table, by = c("CHROM", "START", "STOP"))))
+    na_column <- data.frame(na_column)
+    names(na_column) <- basename(bed_file_path)
+    write.table(na_column, file = paste(anno_path, "/", basename(bed_file_path), ".anno", sep=""), col.names = TRUE, quote = FALSE, row.names = FALSE)}else{
+    write.table(anno_column, file = paste(anno_path, "/", basename(bed_file_path), ".anno", sep=""), col.names = TRUE, quote = FALSE, row.names = FALSE)
+    }
 }
 
 #' Write intermediate annotation columns from dir.
@@ -207,7 +229,6 @@ anno_vars <- function(bed_dir_path, variant_path, cores = 1, write_files = TRUE)
     annotate_variants(bed_dir_path = bed_dir_path, variant_path = variant_path, cores = cores)
   }
 }
-
 
 ## Functions for annotating from vector of file paths ----------------
 ##' Write intermediate cols and horizontally concatenate output.
