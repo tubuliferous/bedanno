@@ -23,13 +23,16 @@ NULL
 #' @author http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
 #' @param path a character
 #' @return data.table
-gzfread <- function(path, sep = "\t", out_dir = NULL){
-  if(!stringr::str_detect(path, ".gz$")) {
-    return(data.table::fread(path, sep = sep))
-  }
-  else{
-    return(data.table::fread(paste0("zcat < ", "\"", path, "\"")))
-  }
+function (path, sep = "\t", skip = 0L, out_dir = NULL) 
+{
+    path <- stringr::str_replace_all(path, " ", "\\\\ ")
+    if (!stringr::str_detect(path, ".gz$")) {
+        return(data.table::fread(path, sep = sep, skip = skip))
+    }
+    else {
+        return(data.table::fread(paste0("zcat < ", path), sep = sep, 
+            skip = skip))
+    }
 }
 
 #' Import BED file.
