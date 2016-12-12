@@ -23,7 +23,7 @@ NULL
 #' @author http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
 #' @param path a character
 #' @return data.table
-function (path, sep = "\t", skip = 0L, out_dir = NULL) 
+gzfread <- function (path, sep = "\t", skip = 0L, out_dir = NULL) 
 {
     path <- stringr::str_replace_all(path, " ", "\\\\ ")
     if (!stringr::str_detect(path, ".gz$")) {
